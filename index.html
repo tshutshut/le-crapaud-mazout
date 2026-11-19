@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Crapaud Mazout</title>
+<link rel="icon" href="toad-cut.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=New+Rocker&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+
+<script>
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  LISTE DES NUMÉROS : c'est la seule partie à modifier.            ║
+   ║                                                                  ║
+   ║  Pour publier un nouveau numéro :                                ║
+   ║   1. Dans l'outil, onglet La Gazette, cliquez sur                ║
+   ║      « Enregistrer la page HTML ». Vous obtenez numero-4.html.   ║
+   ║   2. Déposez ce fichier dans le dossier public/numeros/.         ║
+   ║   3. Ajoutez une ligne ci-dessous (l'ordre n'a pas d'importance, ║
+   ║      le plus récent s'affiche toujours en premier).              ║
+   ║                                                                  ║
+   ║  date au format AAAA-MM-JJ.                                      ║
+   ╚══════════════════════════════════════════════════════════════════╝ */
+const NUMEROS = [
+  // Exemple : enlevez les deux barres « // » au début de la ligne et adaptez-la.
+  // { numero: 1, date: "2026-11-26", titre: "Le titre de l'article" },
+];
+const NOM_DE_LA_GAZETTE = "Le Crapaud Mazout";
+/* ───────────── Rien à modifier en dessous de cette ligne ───────────── */
+</script>
+
+<style>
+/* Même unité que la gazette : 8 px. */
+:root{--u:8px;--table:#1f150d;--table-clair:#3b2817;--parchemin:#e8d6ac;--parchemin-clair:#f1e4c3;--encre:#2a1a0e;--or:#b89c6a;--rubrique:#7c2214;--doux:#cdb88f;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--table);background-image:radial-gradient(ellipse at 50% 0%,var(--table-clair) 0%,var(--table) 70%);background-attachment:fixed;color:var(--parchemin-clair);font-family:"IM Fell English",Georgia,serif;font-size:16px;line-height:calc(3*var(--u))}
+.barre{max-width:1120px;margin:0 auto;padding:calc(2*var(--u)) calc(2*var(--u)) 0;display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(2*var(--u))}
+.nom{font-family:"New Rocker",serif;font-weight:normal;font-size:32px;line-height:calc(5*var(--u));margin:0;color:var(--parchemin);display:flex;align-items:center;gap:var(--u)}
+.nom img{width:calc(5*var(--u));height:calc(5*var(--u));object-fit:contain}
+.choix{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u);margin-left:auto}
+.choix label{font-family:"IM Fell English SC",serif;color:var(--doux)}
+select{font:inherit;font-size:16px;line-height:calc(3*var(--u));color:var(--encre);background:var(--parchemin-clair);border:1px solid var(--or);padding:var(--u);border-radius:0;max-width:calc(48*var(--u))}
+.btn{font-family:"IM Fell English SC",serif;font-size:16px;line-height:calc(3*var(--u));letter-spacing:.05em;background:var(--encre);color:var(--parchemin-clair);border:1px solid var(--or);padding:var(--u) calc(2*var(--u));cursor:pointer;border-radius:0}
+.btn:hover{background:var(--rubrique)}
+.btn[disabled]{opacity:.4;cursor:default;background:var(--encre)}
+select:focus-visible,.btn:focus-visible{outline:2px solid var(--parchemin);outline-offset:2px}
+.etat{max-width:1120px;margin:calc(3*var(--u)) auto 0;padding:0 calc(2*var(--u));font-style:italic;color:var(--doux)}
+.etat:empty{display:none}
+iframe{display:block;width:100%;border:0;height:calc(150*var(--u));margin-top:var(--u)}
+@media (max-width:700px){.choix{margin-left:0}.nom{font-size:26px}}
+</style>
+</head>
+<body>
+<header class="barre">
+  <h1 class="nom"><img src="toad-cut.png" alt=""><span id="nom"></span></h1>
+  <div class="choix">
+    <button class="btn" type="button" id="ancien" aria-label="Numéro plus ancien">‹ Plus ancien</button>
+    <label for="numero">Numéro</label>
+    <select id="numero"></select>
+    <button class="btn" type="button" id="recent" aria-label="Numéro plus récent">Plus récent ›</button>
+  </div>
+</header>
+<p class="etat" id="etat" role="status"></p>
+<iframe id="page" title="Numéro de la gazette"></iframe>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  $("nom").textContent=NOM_DE_LA_GAZETTE;
+  const liste=NUMEROS.slice().sort((a,b)=>b.numero-a.numero);
+  const fichier=n=>n.fichier||("numeros/numero-"+n.numero+".html");
+  const date=d=>{const x=new Date(d+"T12:00:00");return isNaN(x)?(d||""):x.toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})};
+  const sel=$("numero"),cadre=$("page");
+  liste.forEach(n=>{const o=document.createElement("option");o.value=n.numero;o.textContent="N° "+n.numero+" · "+date(n.date)+(n.titre?" · "+n.titre:"");sel.append(o)});
+  if(!liste.length){$("etat").textContent="Aucun numéro pour l'instant. Les crapauds typographes sont en pause.";sel.disabled=$("ancien").disabled=$("recent").disabled=true;cadre.hidden=true;return}
+
+  function ajuster(){
+    try{const d=cadre.contentDocument;if(d&&d.documentElement)cadre.style.height=d.documentElement.scrollHeight+"px"}catch(e){}
+  }
+  function ouvrir(num,maj){
+    const i=liste.findIndex(n=>String(n.numero)===String(num));
+    const k=i<0?0:i,n=liste[k];
+    sel.value=n.numero;
+    $("recent").disabled=k===0;$("ancien").disabled=k===liste.length-1;
+    $("etat").textContent="";
+    cadre.src=fichier(n);
+    document.title=NOM_DE_LA_GAZETTE+", numéro "+n.numero;
+    if(maj!==false)history.replaceState(null,"","#numero-"+n.numero);
+  }
+  cadre.addEventListener("load",()=>{
+    ajuster();
+    try{const d=cadre.contentDocument;if(d&&d.fonts)d.fonts.ready.then(ajuster);setTimeout(ajuster,600)}catch(e){}
+  });
+  cadre.addEventListener("error",()=>{$("etat").textContent="Ce numéro s'est égaré dans la mare : fichier introuvable."});
+  addEventListener("resize",ajuster);
+  sel.addEventListener("change",()=>ouvrir(sel.value));
+  $("recent").addEventListener("click",()=>{const k=liste.findIndex(n=>String(n.numero)===sel.value);if(k>0)ouvrir(liste[k-1].numero)});
+  $("ancien").addEventListener("click",()=>{const k=liste.findIndex(n=>String(n.numero)===sel.value);if(k<liste.length-1)ouvrir(liste[k+1].numero)});
+  addEventListener("hashchange",()=>{const m=location.hash.match(/^#numero-(\d+)$/);if(m)ouvrir(m[1],false)});
+  const m=location.hash.match(/^#numero-(\d+)$/);
+  ouvrir(m?m[1]:liste[0].numero,!!m);
+})();
+</script>
+</body>
+</html>
